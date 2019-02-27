@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Script to validate that every pull request title follows the rule to have a Jira issue on start of it.
+# Only merge commits that are from pull requests are checked, every other is ignored
+
+# regex to check for valid PR title
+pr_title_regex='((GG|GGINTL)-[0-9]{3,5})|(\[NO_ISSUE\]) .*'
+# regex to find merge pull request
+commit_merge_pr_regex='^Merge pull request #(.| |\n)* '
+# error message to be shown if the PR title does not follow correct format style
+error_msg="Aborting commit.\\nYour PR title is missing a JIRA Issue. It must start with the GG or GGINTL - number of the Issue.\\nEx. \"GG-1234 some title\"\\nIn order to skip jira issue check start the PR title with \"[NO_ISSUE]\"\\nEx. \"[NO_ISSUE] some title\"\\n"
+
+if ! grep -iqE "$commit_merge_pr_regex" "$1"; then
+	exit 0
+fi
+
+if ! grep -iqE "$commit_merge_pr_regex$pr_title_regex" "$1"; then
+    printf "$error_msg" >&2
+    exit 1
+fi
